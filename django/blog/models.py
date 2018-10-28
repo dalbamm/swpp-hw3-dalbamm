@@ -6,9 +6,9 @@ class Article(models.Model):
 	title = models.CharField(max_length=120)
 	content = models.TextField(max_length=500)
 	author = models.ForeignKey(
-			User,
-			on_delete=models.CASCADE,
-			related_name='author_set',
+		User,
+		on_delete=models.CASCADE,
+		related_name='author_set',
 	)
 	def __str__(self):
 		return "title: {}/ content: {}".format(self.title, self.content)
@@ -21,9 +21,9 @@ class Comment(models.Model):
 	)
 	content = models.TextField(max_length=500)
 	author = models.ForeignKey(
-			User,
-			on_delete=models.CASCADE,
-			related_name='comment_author_set',
+		User,
+		on_delete=models.CASCADE,
+		related_name='comment_author_set',
 	)
 	def __str__(self):
 		return "content: {}".format(self.content)

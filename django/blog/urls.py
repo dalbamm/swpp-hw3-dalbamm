@@ -4,4 +4,6 @@ from blog import views
 urlpatterns = [
     path('signup', views.signup, name='signup'),
     path('token', views.token, name='token'),
+    path('signin', views.signin, name='signin'),
+    
 ]

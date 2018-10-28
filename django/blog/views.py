@@ -13,6 +13,16 @@ def signup(request):
         return HttpResponse(status=201)
     else:
         return HttpResponseNotAllowed(['POST'])
+def signin(request):
+    if request.method == 'POST':
+        req_data = json.loads(request.body.decode())
+        qusername = req_data['username']
+        qpassword = req_data['password']
+        t = User.objects.filter(username=qusername).exists()
+        print(t)
+        return HttpResponse(status=204)
+    else:
+        return HttpResponseNotAllowed(['POST'])
 
 
 @ensure_csrf_cookie

@@ -68,8 +68,8 @@ def article_id(request, article_id):
 	#print(article_id)
 	if request.method == 'GET':
 		art = Article.objects.all().filter(id=article_id).get()
-		if art==null:
-			return HttpResponse(status=405)
+		#if art:
+		# 	return HttpResponse(status=405)
 		tmpdict={"title":art.title, "content":art.content,
 			"author":art.author.id
 		}
@@ -114,15 +114,30 @@ def comment(request, article_id):
 	else:
 		return HttpResponse(status=405)
 def comment_id(request, comment_id):
-	print(comment_id)
 	if request.method == 'GET':
-		return null
+		com = Comment.objects.all().filter(id=comment_id).get()
+		#if art:
+		# 	return HttpResponse(status=405)
+		tmpdict={"article":com.article.id, "content":com.content,
+			"author":com.author.id
+		}
+		print(tmpdict)
+		return JsonResponse(tmpdict,status=200)
 	elif request.method == 'PUT':
-		return null
+		req_data = json.loads(request.body.decode())
+		content = req_data['content']
+		com = Comment.objects.filter(id=comment_id).get()
+		com.content = content
+		com.save()
+		return HttpResponse(status=200)
 	elif request.method == 'DELETE':
-		return null
+		req_data = json.loads(request.body.decode())
+		content = req_data['content']
+		com = Comment.objects.filter(id=comment_id).get()
+		com.delete()
+		return HttpResponse(status=200)
 	else:
-		return HttpResponse(status=201)
+		return HttpResponse(status=405)
 
 @ensure_csrf_cookie
 def token(request):

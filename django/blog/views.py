@@ -75,7 +75,7 @@ def article(request):
 		art.save()
 		return HttpResponse(status=201)
 	else:
-		return HttpResponseNotAllowed(['POST'])
+		return HttpResponse(status=405)
 
 def article_id(request, article_id):
 	#print(article_id)
@@ -85,17 +85,18 @@ def article_id(request, article_id):
 	art_g = Article.objects.all().filter(id=article_id)
 	if art_g.count() == 0:
 		return HttpResponse(status=404)
-		
+	art = Article.objects.all().filter(id=article_id)
+	art=art.get()
 	if request.method == 'GET':
 		art = Article.objects.all().filter(id=article_id)
-		if art.count() == 0:
-			return HttpResponse(status=404)
 		art=art.get()
 		tmpdict={"id":art.id,
 			"title":art.title, "content":art.content,
 			"author":art.author.id
 		}
 		return JsonResponse(tmpdict,status=200)
+	
+		
 	elif request.method == 'PUT':
 		req_data = json.loads(request.body.decode())
 		title = req_data['title']
@@ -103,6 +104,7 @@ def article_id(request, article_id):
 		art = Article.objects.filter(id=article_id).get()
 		if check403(request, art.author) is False:
 			return HttpResponse(status=403)
+	
 		art.title = title
 		art.content = content
 		art.save()

@@ -5,7 +5,7 @@ import json
 
 class BlogTestCase(TestCase):
     def setUp(self):
-        u1 = User(username='chris',password='chris')
+        u1 = User(username='chris1',password='chris1')
         u2 = User(username='chris2',password='chris2')
         u1.save()
         u2.save()
@@ -21,6 +21,7 @@ class BlogTestCase(TestCase):
         c2.save()
         
     def test_csrf(self):
+        
         # By default, csrf checks are disabled in test client
         # To test csrf protection we enforce csrf checks here
         client = Client(enforce_csrf_checks=True)
@@ -126,11 +127,56 @@ class BlogTestCase(TestCase):
                                content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
         self.assertEqual(response.status_code, 200)  # Pass csrf protection
         
-        response = client.delete('/api/article/1', 
+        response = client.delete('/api/article/3', 
                                content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
         self.assertEqual(response.status_code, 200)  # Pass csrf protection
         
+#for comment
+        response=client.post('/api/article/1/comment',json.dumps( {'content': 'chris333'}),
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 201)  # Pass csrf protection
+        
+        response = client.get('/api/article/0/comment')
+        self.assertEqual(response.status_code, 404)  # Pass csrf protection
 
+        response = client.get('/api/article/1/comment')
+        self.assertEqual(response.status_code, 200)  # Pass csrf protection
+
+        response = client.put('/api/article/1/comment', json.dumps({'title': 'chris', 'content': 'chris'}),
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 405)  # Pass csrf protection
+        
+        response = client.delete('/api/article/1/comment', 
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 405)  # Pass csrf protection
+        
+        #comment ids
+        response=client.post('/api/comment/1',json.dumps( {'content': 'chris333'}),
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 405)  # Pass csrf protection
+        
+        response = client.get('/api/comment/0')
+        self.assertEqual(response.status_code, 404)  # Pass csrf protection
+
+        response = client.get('/api/comment/1')
+        self.assertEqual(response.status_code, 200)  # Pass csrf protection
+
+        response = client.put('/api/comment/1', json.dumps({'title': 'chris', 'content': 'chris'}),
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 403)  # Pass csrf protection
+        
+        response = client.delete('/api/comment/1', 
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 403)  # Pass csrf protection
+        
+        response = client.put('/api/comment/3', json.dumps({'content': 'chris333c'}),
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 200)  # Pass csrf protection
+        
+        response = client.delete('/api/comment/3', 
+                               content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 200)  # Pass csrf protection
+        
 
 
 
@@ -165,4 +211,7 @@ class BlogTestCase(TestCase):
                                content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
         self.assertEqual(response.status_code, 405)  # Pass csrf protection
         
+        
+        response = client.post('/api/token',content_type='application/json', HTTP_X_CSRFTOKEN=csrftoken)
+        self.assertEqual(response.status_code, 405)  # Pass csrf protection
         

@@ -155,8 +155,6 @@ def comment_id(request, comment_id):
 	
 	if request.method == 'GET':
 		com = Comment.objects.all().filter(id=comment_id)
-		if com.count() == 0:
-			return HttpResponse(status=404)
 		com = com.get()
 		tmpdict={
 			"id":com.id,

@@ -10,9 +10,7 @@ class Article(models.Model):
 		on_delete=models.CASCADE,
 		related_name='authorID_set',
 	)
-	def __str__(self):
-		return "title: {}/ content: {}".format(self.title, self.content)
-
+	
 class Comment(models.Model):
 	article = models.ForeignKey(
 		Article,
@@ -25,5 +23,4 @@ class Comment(models.Model):
 		on_delete=models.CASCADE,
 		related_name='comment_authorID_set',
 	)
-	def __str__(self):
-		return "content: {}".format(self.content)
+	

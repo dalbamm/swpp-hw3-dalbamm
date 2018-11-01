@@ -39,7 +39,7 @@ def signin(request):
 			return HttpResponse(status=204)
 		else:
 			return HttpResponse(status=401)
-	else:
+	else:		
 		return HttpResponse(status=405)
 def signout(request):
 	if request.method == 'GET':

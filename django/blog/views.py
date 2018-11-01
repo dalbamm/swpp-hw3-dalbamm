@@ -11,6 +11,12 @@ def checkAuth(request):
 	else:
 		return False
 
+def check403(request, quser):
+	if request.user.id == quser.id:
+		return True
+	else:
+		return False
+
 def signup(request):
     if request.method == 'POST':
         req_data = json.loads(request.body.decode())
@@ -51,14 +57,14 @@ def article(request):
 	if request.method == 'GET':
 		raw = Article.objects.all()
 		rst = []
-		'''for obj in raw:
+		for obj in raw:
 			tmpdict={}
+			tmpdict['id']=obj.id
 			tmpdict['title']=obj.title
 			tmpdict['content']=obj.content
 			tmpdict['author']=obj.author.id
 			rst.append(tmpdict)
-			#print(rst)'''
-		rst = list(raw.values())
+		
 		return JsonResponse(rst,status=200,safe=False)
 	elif request.method == 'POST':
 		req_data = json.loads(request.body.decode())
@@ -76,6 +82,10 @@ def article_id(request, article_id):
 	if checkAuth(request) is False: 
 		return HttpResponse(status=401)
 	
+	art_g = Article.objects.all().filter(id=article_id)
+	if art_g.count() == 0:
+		return HttpResponse(status=404)
+		
 	if request.method == 'GET':
 		art = Article.objects.all().filter(id=article_id)
 		if art.count() == 0:
@@ -85,22 +95,22 @@ def article_id(request, article_id):
 			"title":art.title, "content":art.content,
 			"author":art.author.id
 		}
-		print(tmpdict)
 		return JsonResponse(tmpdict,status=200)
 	elif request.method == 'PUT':
 		req_data = json.loads(request.body.decode())
 		title = req_data['title']
 		content = req_data['content']
 		art = Article.objects.filter(id=article_id).get()
+		if check403(request, art.author) is False:
+			return HttpResponse(status=403)
 		art.title = title
 		art.content = content
 		art.save()
 		return HttpResponse(status=200)
 	elif request.method == 'DELETE':
-		req_data = json.loads(request.body.decode())
-		title = req_data['title']
-		content = req_data['content']
 		art = Article.objects.filter(id=article_id).get()
+		if check403(request, art.author) is False:
+			return HttpResponse(status=403)
 		art.delete()
 		return HttpResponse(status=200)
 	else:
@@ -109,6 +119,10 @@ def comment(request, article_id):
 	#print(article_id)
 	if checkAuth(request) is False: 
 		return HttpResponse(status=401)
+	
+	art_g = Article.objects.all().filter(id=article_id)
+	if art_g.count() == 0:
+		return HttpResponse(status=404)
 	
 	if request.method == 'GET':
 		raw = Comment.objects.filter(article_id = article_id)
@@ -133,6 +147,10 @@ def comment_id(request, comment_id):
 	if checkAuth(request) is False: 
 		return HttpResponse(status=401)
 	
+	comg = Comment.objects.all().filter(id=comment_id)
+	if comg.count() == 0:
+		return HttpResponse(status=404)
+	
 	if request.method == 'GET':
 		com = Comment.objects.all().filter(id=comment_id)
 		if com.count() == 0:
@@ -143,19 +161,23 @@ def comment_id(request, comment_id):
 			"article":com.article.id, "content":com.content,
 			"author":com.author.id
 		}
-		print(tmpdict)
 		return JsonResponse(tmpdict,status=200)
 	elif request.method == 'PUT':
 		req_data = json.loads(request.body.decode())
 		content = req_data['content']
 		com = Comment.objects.filter(id=comment_id).get()
+	
+		if check403(request, com.author) is False:
+			return HttpResponse(status=403)
+		
 		com.content = content
 		com.save()
 		return HttpResponse(status=200)
 	elif request.method == 'DELETE':
-		req_data = json.loads(request.body.decode())
-		content = req_data['content']
-		com = Comment.objects.filter(id=comment_id).get()
+		com=comg.get()
+		if check403(request, com.author) is False:
+			return HttpResponse(status=403)
+		
 		com.delete()
 		return HttpResponse(status=200)
 	else:

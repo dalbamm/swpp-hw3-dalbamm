@@ -1,10 +1,15 @@
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login
+from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from blog.models import *
 import json
 
+def checkAuth(request):
+	if request.user.is_authenticated:
+		return True
+	else:
+		return False
 
 def signup(request):
     if request.method == 'POST':
@@ -14,7 +19,7 @@ def signup(request):
         User.objects.create_user(username=username, password=password)
         return HttpResponse(status=201)
     else:
-        return HttpResponseNotAllowed(['POST'])
+        return HttpResponse(status=405)
 
 def signin(request):
 	if request.method == 'POST':
@@ -29,28 +34,31 @@ def signin(request):
 		else:
 			return HttpResponse(status=401)
 	else:
-		return HttpResponse(status=401)
+		return HttpResponse(status=405)
 def signout(request):
 	if request.method == 'GET':
-		if request.user is not None:
-			logout()
+		if checkAuth(request):
+			logout(request)
 			return HttpResponse(status=204)
 		else:
 			return HttpResponse(status=401)      
 	else:
-		return HttpResponse(status=401)
+		return HttpResponse(status=405)
 #^- need config
 def article(request):
+	if checkAuth(request) is False: 
+		return HttpResponse(status=401)
 	if request.method == 'GET':
 		raw = Article.objects.all()
 		rst = []
-		for obj in raw:
+		'''for obj in raw:
 			tmpdict={}
 			tmpdict['title']=obj.title
 			tmpdict['content']=obj.content
 			tmpdict['author']=obj.author.id
 			rst.append(tmpdict)
-			#print(rst)
+			#print(rst)'''
+		rst = list(raw.values())
 		return JsonResponse(rst,status=200,safe=False)
 	elif request.method == 'POST':
 		req_data = json.loads(request.body.decode())
@@ -59,18 +67,19 @@ def article(request):
 		art = Article(title=title, content=content, author=request.user)
 #create in db
 		art.save()
-		
 		return HttpResponse(status=201)
 	else:
 		return HttpResponseNotAllowed(['POST'])
 
 def article_id(request, article_id):
 	#print(article_id)
+	if checkAuth(request) is False: 
+		return HttpResponse(status=401)
+	
 	if request.method == 'GET':
 		art = Article.objects.all().filter(id=article_id).get()
-		#if art:
-		# 	return HttpResponse(status=405)
-		tmpdict={"title":art.title, "content":art.content,
+		tmpdict={"id":art.id,
+			"title":art.title, "content":art.content,
 			"author":art.author.id
 		}
 		print(tmpdict)
@@ -95,11 +104,15 @@ def article_id(request, article_id):
 		return HttpResponse(status=405)
 def comment(request, article_id):
 	#print(article_id)
+	if checkAuth(request) is False: 
+		return HttpResponse(status=401)
+	
 	if request.method == 'GET':
 		raw = Comment.objects.filter(article_id = article_id)
 		rst = []
 		for obj in raw:
 			tmpdict={}
+			tmpdict['id']=obj.id
 			tmpdict['article']=obj.article_id
 			tmpdict['content']=obj.content
 			tmpdict['author']=obj.author.id
@@ -114,11 +127,16 @@ def comment(request, article_id):
 	else:
 		return HttpResponse(status=405)
 def comment_id(request, comment_id):
+	if checkAuth(request) is False: 
+		return HttpResponse(status=401)
+	
 	if request.method == 'GET':
 		com = Comment.objects.all().filter(id=comment_id).get()
 		#if art:
 		# 	return HttpResponse(status=405)
-		tmpdict={"article":com.article.id, "content":com.content,
+		tmpdict={
+			"id":com.id,
+			"article":com.article.id, "content":com.content,
 			"author":com.author.id
 		}
 		print(tmpdict)
@@ -141,15 +159,8 @@ def comment_id(request, comment_id):
 
 @ensure_csrf_cookie
 def token(request):
+	
     if request.method == 'GET':
         return HttpResponse(status=204)
     else:
         return HttpResponseNotAllowed(['GET'])
-'''
-com = Comment.objects.all().filter(article.id=article_id).get()
-		tmpdict={"title":art.title, "content":art.content,
-			"author":art.author.id
-		}
-		print(tmpdict)
-		
-'''

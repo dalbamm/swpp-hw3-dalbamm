@@ -77,7 +77,10 @@ def article_id(request, article_id):
 		return HttpResponse(status=401)
 	
 	if request.method == 'GET':
-		art = Article.objects.all().filter(id=article_id).get()
+		art = Article.objects.all().filter(id=article_id)
+		if art.count() == 0:
+			return HttpResponse(status=404)
+		art=art.get()
 		tmpdict={"id":art.id,
 			"title":art.title, "content":art.content,
 			"author":art.author.id
@@ -131,9 +134,10 @@ def comment_id(request, comment_id):
 		return HttpResponse(status=401)
 	
 	if request.method == 'GET':
-		com = Comment.objects.all().filter(id=comment_id).get()
-		#if art:
-		# 	return HttpResponse(status=405)
+		com = Comment.objects.all().filter(id=comment_id)
+		if com.count() == 0:
+			return HttpResponse(status=404)
+		com = com.get()
 		tmpdict={
 			"id":com.id,
 			"article":com.article.id, "content":com.content,
